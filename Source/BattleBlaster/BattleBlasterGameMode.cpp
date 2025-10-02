@@ -4,6 +4,7 @@
 #include "BattleBlasterGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnemyTower.h"
+#include "BattleBlasterGameInstance.h"
 
 void ABattleBlasterGameMode::BeginPlay()
 {
@@ -44,7 +45,6 @@ void ABattleBlasterGameMode::BeginPlay()
 void ABattleBlasterGameMode::ActorDied(AActor* DeadActor)
 {
 	bool isGameOver = false;
-	bool isWin = false;
 	
 	if (DeadActor == Tank)
 	{
@@ -80,6 +80,20 @@ void ABattleBlasterGameMode::ActorDied(AActor* DeadActor)
 
 void ABattleBlasterGameMode::GameOverTimerTimeout()
 {
-	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
-	UGameplayStatics::OpenLevel(GetWorld(), *CurrentLevelName);
+	UGameInstance* GameInstance = GetGameInstance();
+	if (GameInstance)
+	{
+		UBattleBlasterGameInstance* BattleBlasterGameInstance = Cast<UBattleBlasterGameInstance>(GameInstance);
+		if (BattleBlasterGameInstance)
+		{
+			if (isWin)
+			{
+				BattleBlasterGameInstance->LoadNextLevel();
+			}
+			else
+			{
+				BattleBlasterGameInstance->RestartCurrentLevel();
+			}
+		}
+	}
 }
