@@ -12,7 +12,10 @@ void UBattleBlasterGameInstance::ChangeCurrentLevel(int32 Index)
 		CurrentLevelIndex = Index;
 
 		FString LevelNameString = FString::Printf(TEXT("Level_%d"), CurrentLevelIndex);
-		UGameplayStatics::OpenLevel(GetWorld(), *LevelNameString);
+		if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0))
+		{
+			UGameplayStatics::OpenLevel(PlayerController, FName(*LevelNameString));
+		}
 	}
 }
 
