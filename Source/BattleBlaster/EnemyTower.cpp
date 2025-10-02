@@ -2,6 +2,7 @@
 
 
 #include "EnemyTower.h"
+#include "Kismet/GameplayStatics.h"
 
 void AEnemyTower::BeginPlay()
 {
@@ -20,7 +21,10 @@ void AEnemyTower::Tick(float DeltaTime)
 
 void AEnemyTower::CheckFireCondition()
 {
-	if (IsInFireRange()) { Fire(); }
+	if (Tank && IsInFireRange() && Tank->IsAlive)
+	{
+		Fire();
+	}
 }
 
 bool AEnemyTower::IsInFireRange()
@@ -32,4 +36,10 @@ bool AEnemyTower::IsInFireRange()
 	}
 	
 	return bIsInFireRange;
+}
+
+void AEnemyTower::HandleDestruction()
+{
+	Super::HandleDestruction();
+	Destroy();
 }

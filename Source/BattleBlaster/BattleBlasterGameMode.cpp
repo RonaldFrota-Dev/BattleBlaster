@@ -40,3 +40,46 @@ void ABattleBlasterGameMode::BeginPlay()
 		LoopIndex++;
 	}
 }
+
+void ABattleBlasterGameMode::ActorDied(AActor* DeadActor)
+{
+	bool isGameOver = false;
+	bool isWin = false;
+	
+	if (DeadActor == Tank)
+	{
+		Tank->HandleDestruction();
+		isGameOver = true;
+	}
+	else
+	{
+		AEnemyTower* DeadTower = Cast<AEnemyTower>(DeadActor);
+		if (DeadTower)
+		{
+			DeadTower->HandleDestruction();
+			
+			TowerCount--;
+			if (TowerCount == 0)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Victory"));
+				isGameOver = true;
+				isWin = true;
+			}
+		}
+	}
+
+	if (isGameOver)
+	{
+		FString GameOverString = isWin ? "You Win!" : "You Lose!";
+		UE_LOG(LogTemp, Display, TEXT("%s"), *GameOverString);
+
+		FTimerHandle GameOverTimerHandle;
+		GetWorldTimerManager().SetTimer(GameOverTimerHandle, this, &ABattleBlasterGameMode::GameOverTimerTimeout, GameOverDelay, false);
+	}
+}
+
+void ABattleBlasterGameMode::GameOverTimerTimeout()
+{
+	FString CurrentLevelName = UGameplayStatics::GetCurrentLevelName(GetWorld());
+	UGameplayStatics::OpenLevel(GetWorld(), *CurrentLevelName);
+}

@@ -2,6 +2,7 @@
 
 #include "Tank.h"
 
+#include <dshow.h>
 #include <rapidjson/document.h>
 
 #include "Camera/CameraComponent.h"
@@ -21,8 +22,9 @@ ATank::ATank()
 void ATank::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+
+	PlayerController = Cast<APlayerController>(Controller);
+	if (PlayerController)
 	{
 		if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
 		{
@@ -39,12 +41,12 @@ void ATank::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	if (PlayerController)
 	{
 		FHitResult HitResult;
 		PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
 		RotateTurret(HitResult.ImpactPoint);
-		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 25.0f, 12, FColor(0, 255, 255));
+		//DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 25.0f, 12, FColor(0, 255, 255));
 	}
 }
 
@@ -75,4 +77,30 @@ void ATank::TurnInput(const FInputActionValue& InputActionValue)
 	FRotator DeltaRotation = FRotator(0.0f, 0.0f, 0.0f);
 	DeltaRotation.Yaw = InputValue * TurnRate * GetWorld()->GetDeltaSeconds();
 	AddActorLocalRotation(DeltaRotation);
+}
+
+void ATank::HandleDestruction()
+{
+	Super::HandleDestruction();
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+	SetPlayerEnabled(false);
+	IsAlive = false;
+}
+
+void ATank::SetPlayerEnabled(bool Enabled)
+{
+	if (PlayerController)
+	{
+		if (Enabled)
+		{
+			EnableInput(PlayerController);
+		}
+		else
+		{
+			DisableInput(PlayerController);
+		}
+		
+		PlayerController->bShowMouseCursor = Enabled;
+	}
 }
